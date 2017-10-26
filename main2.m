@@ -3,18 +3,16 @@ addpath('/Users/jasoncjs/Documents/MATLAB/QSM/view3dgui');
 addpath('/Users/jasoncjs/Documents/MATLAB/QSM/utils');
 addpath('/Users/jasoncjs/Documents/MATLAB/QSM/MEDI_toolbox');
 
-N = [256,256,128];
-samples = 6;
+N = [64,64,32];
+samples = 100;
 n = zeros(samples,3);
-n(:,1) = randi([10 50], 1, samples);
-n(:,2) = randi([10 50], 1, samples);
-n(:,3) = randi([10 30], 1, samples);
+n(:,1) = randi([10 20], 1, samples);
+n(:,2) = randi([10 20], 1, samples);
+n(:,3) = randi([5 10], 1, samples);
 % nn = [30, 30, 20];
 
 voxel_size = [1,1,1];
-chi1 = 0.2;
-chi2 = 0.5;
-truth = chi2 - chi1;
+val = rand(1, samples);
 
 phantom = zeros([samples, N]);
 
@@ -28,7 +26,7 @@ for s = 1:samples
         for j = 1:N(2)
             for k = 1:N(3)
                 if((i - N(1)/2)^2 / n(s,1)^2 + (j - N(2)/2)^2 / n(s,2)^2 + (k - N(3)/2)^2 / n(s,3)^2 <= 1)
-                    phantom(s, i, j, k) = chi1;
+                    phantom(s, i, j, k) = val(s);
                 end
     %             if((i - N(1)/2)^2 / nn(1)^2 + (j - N(2)/2)^2 / nn(2)^2 + (k - N(3)/2)^2 / nn(3)^2 <= 1)
     %                 phantom(i, j, k) = chi2;
@@ -49,14 +47,18 @@ end
 % mask2 = logical(mask2);
 
 D = dipole_kernel(N,voxel_size,[0;0;1]);
-% view3dgui(phantom);
 for s = 1:samples
     phase(s,:,:,:) = ifftn(D .* fftn(squeeze(phantom(s,:,:,:))));
 end
 
+D(find(abs(D)<1e-5)) = 1e-3;
+for s = 1:samples
+    train(s,:,:,:) = ifftn(fftn(squeeze(phase(s,:,:,:))) ./ D);
+end
 % view3dgui(phase);
+% view3dgui(input);
 
-save('train.mat', 'phase');
+save('train.mat', 'train');
 save('target.mat', 'phantom');
 
 % lambda = 1e-4;
