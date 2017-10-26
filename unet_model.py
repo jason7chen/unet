@@ -7,7 +7,7 @@ from keras import backend as K
 
 
 def unet_model_3d(input_shape):
-    filter1 = 32
+    filter1 = 16
     filter2 = filter1 * 2
     filter3 = filter2 * 2
     filter4 = filter3 * 2
@@ -57,7 +57,8 @@ def unet_model_3d(input_shape):
     outputs = add([inputs, residual])
 
     model = Model(inputs=inputs, outputs=outputs)
-    model.compile(optimizer=Adam(lr=0.00001), loss=dice_coef_loss, metrics=[dice_coef])
+    # model.compile(optimizer=Adam(lr=0.00001), loss=dice_coef_loss, metrics=[dice_coef])
+    model.compile(optimizer=Adam(lr=0.00001), loss='mean_squared_error', metrics=['accuracy'])
 
     model.summary()
 
